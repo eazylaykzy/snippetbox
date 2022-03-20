@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/justinas/nosurf"
 )
 
 // The serverError helper writes an error message and stack trace to the errorLog,
@@ -39,13 +41,11 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 		td = &templateData{}
 	}
 
-	// Add the flash message to the template data, if one exists.
-	td.Flash = app.session.PopString(r, "flash")
-
+	// Add the CSRF token to the templateData struct.
+	td.CSRFToken = nosurf.Token(r)
 	td.CurrentYear = time.Now().Year()
-
-	// Add the authentication status to the template data.
 	td.IsAuthenticated = app.isAuthenticated(r)
+	td.Flash = app.session.PopString(r, "flash")
 
 	return td
 }
