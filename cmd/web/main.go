@@ -20,6 +20,7 @@ import (
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
+	users         *mysql.UserModel
 	session       *sessions.Session
 	snippets      *mysql.SnippetModel
 	templateCache map[string]*template.Template
@@ -85,6 +86,7 @@ func main() {
 		infoLog:       infoLog,
 		errorLog:      errorLog,
 		templateCache: templateCache,
+		users:         &mysql.UserModel{DB: db},
 		snippets:      &mysql.SnippetModel{DB: db},
 	}
 
