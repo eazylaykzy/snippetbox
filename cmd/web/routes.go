@@ -28,6 +28,9 @@ func (app *application) routes() http.Handler {
 	mux.Get("/user/signup", dynamicMiddleware.ThenFunc(app.signupUserForm))
 	mux.Post("/user/logout", dynamicMiddleware.Append(app.requireAuthentication).ThenFunc(app.logoutUser))
 
+	// ping route for testing
+	mux.Get("/ping", http.HandlerFunc(ping))
+
 	// Create a file server which serves files out of the "./ui/static" directory.
 	// Note that the path given to the http.Dir function is relative to the project
 	// directory root.
