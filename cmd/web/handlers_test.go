@@ -98,6 +98,43 @@ func TestShowSnippet(t *testing.T) {
 	}
 }
 
+func TestHome(t *testing.T) {
+	// Create a new instance of our application struct which uses the mocked dependencies.
+	app := newTestApplication(t)
+
+	// Establish a new test server for running end-to-end tests.
+	ts := newTestServer(t, app.routes())
+
+	defer ts.Close()
+
+	// Set up some table-driven tests to check the responses sent by our application for different URLs.
+	tests := []struct {
+		name     string
+		urlPath  string
+		wantCode int
+		wantBody []byte
+	}{
+		{"Double slash home", "//", http.StatusNotFound, nil},
+		{"This goes home", "/", http.StatusOK, []byte("An old silent pond")},
+		{"This goes home to Nigeria", "/", http.StatusOK, []byte("Great Nigeria")},
+		{"Home with an invalid route", "/invalid-route", http.StatusNotFound, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			code, _, body := ts.latest(t, tt.urlPath)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body to contain %q", tt.wantBody)
+			}
+		})
+	}
+}
+
 func TestSignupUser(t *testing.T) {
 	app := newTestApplication(t)
 	ts := newTestServer(t, app.routes())
