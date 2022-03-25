@@ -43,8 +43,7 @@ func newTestApplication(t *testing.T) *application {
 	}
 }
 
-// Define a custom testServer type which anonymously embeds a httptest.Server
-// instance.
+// Define a custom testServer type which anonymously embeds a httptest.Server instance.
 type testServer struct {
 	*httptest.Server
 }
@@ -120,19 +119,19 @@ func extractCSRFToken(t *testing.T, body []byte) string {
 // postForm method to send POST requests to the test server. The final parameter to this method is
 // url.Values object which can contain any data that you want to send in the request body.
 func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (int, http.Header, []byte) {
-	rs, err := ts.Client().PostForm(ts.URL+urlPath, form)
+	res, err := ts.Client().PostForm(ts.URL+urlPath, form)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer rs.Body.Close()
+	defer res.Body.Close()
 
 	// Read the response body.
-	body, err := io.ReadAll(rs.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Return the response status, headers and body.
-	return rs.StatusCode, rs.Header, body
+	return res.StatusCode, res.Header, body
 }

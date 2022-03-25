@@ -228,3 +228,70 @@ func TestLoginUser(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateSnippet(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+
+	defer ts.Close()
+
+	// First we authenticate an app user, only an authenticated user can create a snippet
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+
+	form := url.Values{}
+	form.Add("password", "")
+	form.Add("email", "eazy@example.com")
+	form.Add("csrf_token", csrfToken)
+	ts.postForm(t, "/user/login", form)
+
+	// only then will the app redirect to the create snippet page for the authenticated user
+	status, _, body := ts.get(t, "/snippet/create")
+	if status != 200 {
+		t.Errorf("want %d; got %d", 200, status)
+	}
+
+	formTag := "<form action='/snippet/create' method='POST'>"
+	if !bytes.Contains(body, []byte(formTag)) {
+		t.Errorf("want body %s to contain %q", body, formTag)
+	}
+
+	// extract the csrf token for the snippet form for the authenticated user
+	//csrfToken = extractCSRFToken(t, body)
+
+	tests := []struct {
+		name      string
+		title     string
+		content   string
+		expires   string
+		csrfToken string
+		wantCode  int
+		wantBody  []byte
+	}{
+		{"Invalid CSRF Token", "", "", "", "wrongToken", http.StatusBadRequest, nil},
+		{"Empty content", "Hello", "", "7", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
+		{"Empty title", "", "Greater days ahead!", "1", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
+		{"Empty expire date", "Moving", "Moving forward", "", csrfToken, http.StatusOK, []byte("This field cannot be blank")},
+		{"Valid submission", "Great Nigeria", "Nigeria will definitely be great again!", "365", csrfToken, http.StatusSeeOther, nil},
+		{"Long title characters", "This is a pretty long ass title character count, that is so long, it is actually longer than a hundreds of character", "bob@example.com", "pa$$word", csrfToken, http.StatusOK, []byte("This field is too long (maximum is 100 characters)")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			form := url.Values{}
+			form.Add("title", tt.title)
+			form.Add("content", tt.content)
+			form.Add("expires", tt.expires)
+			form.Add("csrf_token", tt.csrfToken)
+			code, _, body := ts.postForm(t, "/snippet/create", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
