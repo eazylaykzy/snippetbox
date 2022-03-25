@@ -295,3 +295,58 @@ func TestCreateSnippet(t *testing.T) {
 		})
 	}
 }
+
+func TestLogoutUser(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+
+	defer ts.Close()
+
+	// First we authenticate an app user, only an authenticated user can create a snippet
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+
+	form := url.Values{}
+	form.Add("password", "")
+	form.Add("email", "eazy@example.com")
+	form.Add("csrf_token", csrfToken)
+	ts.postForm(t, "/user/login", form)
+
+	// only then will the app redirect to the create snippet page for the authenticated user
+	status, _, body := ts.get(t, "/snippet/create")
+	if status != 200 {
+		t.Errorf("want %d; got %d", 200, status)
+	}
+
+	formTag := "<form action='/snippet/create' method='POST'>"
+	if !bytes.Contains(body, []byte(formTag)) {
+		t.Errorf("want body %s to contain %q", body, formTag)
+	}
+
+	tests := []struct {
+		name      string
+		csrfToken string
+		wantCode  int
+		wantBody  []byte
+	}{
+		{"Valid logout message", csrfToken, http.StatusSeeOther, nil},
+		{"Invalid CSRF Token", "wrongToken", http.StatusBadRequest, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// after which we call the logout route and post the form
+			form := url.Values{}
+			form.Add("csrf_token", tt.csrfToken)
+			code, _, body := ts.postForm(t, "/user/logout", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
