@@ -3,7 +3,6 @@ package main
 import (
 	"html"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
@@ -129,7 +128,7 @@ func (ts *testServer) postForm(t *testing.T, urlPath string, form url.Values) (i
 	defer rs.Body.Close()
 
 	// Read the response body.
-	body, err := ioutil.ReadAll(rs.Body)
+	body, err := io.ReadAll(rs.Body)
 	if err != nil {
 		t.Fatal(err)
 	}

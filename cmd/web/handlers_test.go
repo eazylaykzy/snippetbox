@@ -183,3 +183,48 @@ func TestSignupUser(t *testing.T) {
 		})
 	}
 }
+
+func TestLoginUser(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+
+	defer ts.Close()
+
+	_, _, body := ts.get(t, "/user/login")
+	csrfToken := extractCSRFToken(t, body)
+
+	tests := []struct {
+		name         string
+		userEmail    string
+		userPassword string
+		csrfToken    string
+		wantCode     int
+		wantBody     []byte
+	}{
+		{"Invalid CSRF Token", "", "", "wrongToken", http.StatusBadRequest, nil},
+		{"Valid submission", "eazy@example.com", "Argument123", csrfToken, http.StatusSeeOther, nil},
+		{"Empty email", "", "validPa$$word", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Empty password", "bob@example.com", "", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Invalid email (missing @)", "bobexample.com", "validPa$$word", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Invalid email (incomplete domain)", "bob@example.", "validPa$$word", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+		{"Invalid email (missing local part)", "@example.com", "validPa$$word", csrfToken, http.StatusOK, []byte("Email or Password is incorrect")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			form := url.Values{}
+			form.Add("email", tt.userEmail)
+			form.Add("csrf_token", tt.csrfToken)
+			form.Add("password", tt.userPassword)
+			code, _, body := ts.postForm(t, "/user/login", form)
+
+			if code != tt.wantCode {
+				t.Errorf("want %d; got %d", tt.wantCode, code)
+			}
+
+			if !bytes.Contains(body, tt.wantBody) {
+				t.Errorf("want body %s to contain %q", body, tt.wantBody)
+			}
+		})
+	}
+}
