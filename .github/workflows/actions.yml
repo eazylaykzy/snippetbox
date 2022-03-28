@@ -20,7 +20,7 @@ jobs:
       - name: "Mysql Setup"
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e "CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON ${{ secrets.DB_DATABASE }}.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON ${{ secrets.TEST_DB_DATABASE }}.* TO '${{ secrets.TEST_DB_USER }}'@'localhost';ALTER USER '${{ secrets.TEST_DB_USER }}'@'localhost' IDENTIFIED BY '${{ secrets.DB_TEST_PASSWORD }}';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
+          mysql -e "CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON ${{ secrets.DB_DATABASE }}.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
       - name: Build
         run: go build -v ./...
 
@@ -30,5 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: "Mysql Setup"
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e "CREATE DATABASE ${{ secrets.TEST_DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER '${{ secrets.TEST_DB_USER }}'@'localhost'; GRANT SELECT, DROP, ALTER, INDEX, CREATE, INSERT, UPDATE, DELETE ON ${{ secrets.TEST_DB_DATABASE }}.* TO '${{ secrets.TEST_DB_USER }}'@'localhost';ALTER USER '${{ secrets.TEST_DB_USER }}'@'localhost' IDENTIFIED BY '${{ secrets.DB_TEST_PASSWORD }}';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
       - name: Test
         run: go test -v ./...
