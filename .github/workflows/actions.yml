@@ -24,7 +24,7 @@ jobs:
           mysql -e "CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON ${{ secrets.DB_DATABASE }}.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
 
       - name: Build
-        run: go build -o ./cmd ./...
+        run: go build -o ./cmd/web ./...
 
   test:
     runs-on: ubuntu-latest
@@ -49,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: snippetbox
-          path: bin/web
+          path: cmd/web
