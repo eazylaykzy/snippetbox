@@ -20,7 +20,7 @@ jobs:
       - name: "Mysql Setup"
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON snippetbox.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';' -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
+          mysql -e "CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON snippetbox.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
       - name: Build
         run: go build -v ./...
 
