@@ -20,23 +20,7 @@ jobs:
       - name: "Mysql Setup"
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;' -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
-          
-          USE snippetbox;
-          
-          CREATE TABLE snippets (
-          id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-          title VARCHAR(100) NOT NULL,
-          content TEXT NOT NULL,
-          created DATETIME NOT NULL,
-          expires DATETIME NOT NULL
-          );
-          
-          CREATE INDEX idx_snippets_created ON snippets(created);
-          
-          CREATE USER 'web'@'localhost';
-          GRANT SELECT, INSERT, UPDATE ON snippetbox.* TO 'web'@'localhost';
-          ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';
+          mysql -e 'CREATE DATABASE ${{ secrets.DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;CREATE USER 'web'@'localhost';GRANT SELECT, INSERT, UPDATE ON snippetbox.* TO 'web'@'localhost';ALTER USER 'web'@'localhost' IDENTIFIED BY '1234';' -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
       - name: Build
         run: go build -v ./...
 
