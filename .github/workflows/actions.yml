@@ -34,10 +34,6 @@ jobs:
         run: |
           sudo /etc/init.d/mysql start
   
-          mysql -e 'CREATE DATABASE ${{ secrets.TEST_DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;' -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
-          
-          CREATE USER '${{ secrets.TEST_DB_DATABASE }}'@'localhost';
-          GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON ${{ secrets.TEST_DB_DATABASE }}.* TO '${{ secrets.TEST_DB_USER }}'@'localhost';
-          ALTER USER '${{ secrets.TEST_DB_USER }}'@'localhost' IDENTIFIED BY '${{ secrets.DB_TEST_PASSWORD }}';
+          mysql -e "CREATE DATABASE ${{ secrets.TEST_DB_DATABASE }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;CREATE USER '${{ secrets.TEST_DB_DATABASE }}'@'localhost';GRANT CREATE, DROP, ALTER, INDEX, SELECT, INSERT, UPDATE, DELETE ON ${{ secrets.TEST_DB_DATABASE }}.* TO '${{ secrets.TEST_DB_USER }}'@'localhost';ALTER USER '${{ secrets.TEST_DB_USER }}'@'localhost' IDENTIFIED BY '${{ secrets.DB_TEST_PASSWORD }}';" -u${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }}
       - name: Test
         run: go test -v ./...
