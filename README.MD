@@ -1,1 +1,1 @@
-## will update 😉
+[![Go Reference](https://pkg.go.dev/badge/github.com/eazylaykzy/snippetbox.svg)](https://pkg.go.dev/github.com/eazylaykzy/snippetbox)
