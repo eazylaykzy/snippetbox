@@ -1,4 +1,4 @@
-name: Snippetbox CI/CD
+name: Snippetbox
 
 on:
   push:
