@@ -53,6 +53,7 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
+    needs: [ test ]
     name: Update coverage badge
     steps:
       - name: Checkout
